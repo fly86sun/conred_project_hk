@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+   
+  
+	<mapper namespace="com.hk.conred.Reserve">
+		
+		
+																	
+		<insert id="insertReserveS" parameterType="Map">
+			INSERT INTO CON_RESERVE VALUES(CON_RESERVE_SEQ.NEXTVAL,#{user_id},#{menu_seq},#{store_seq},null,'Y',#{reserve_price},#{reserve_sdate},#{reserve_edate},SYSDATE,'N')
+		</insert>
+		
+		<insert id="insertReserveT" parameterType="Map">
+			INSERT INTO CON_RESERVE VALUES(CON_RESERVE_SEQ.NEXTVAL,#{user_id},#{menu_seq},#{store_seq},#{reserve_time},'Y',#{reserve_price},#{reserve_sdate},null,SYSDATE,'N')
+		</insert>
+		
+		
+		
+		<select id="reserveList" parameterType="Map" resultType="ReserveDto">
+			SELECT  rn, RESERVE_SEQ ,USER_ID ,cr.MENU_SEQ ,cr.STORE_SEQ ,RESERVE_TIME ,RESERVE_STATE ,RESERVE_PRICE ,RESERVE_SUCCES,
+			RESERVE_SDATE ,RESERVE_EDATE ,RESERVE_REGDATE ,cm.MENU_NAME ,cs.STORE_NAME ,cs.STORE_ADDRESS  
+			FROM 
+			    (SELECT ROW_NUMBER()over(ORDER BY RESERVE_REGDATE DESC) AS rn,RESERVE_SEQ ,USER_ID ,MENU_SEQ ,STORE_SEQ ,RESERVE_TIME ,RESERVE_STATE ,RESERVE_PRICE ,RESERVE_SDATE ,RESERVE_EDATE ,RESERVE_REGDATE,RESERVE_SUCCES
+			     FROM CON_RESERVE WHERE USER_ID=#{user_id}) cr ,CON_MENU cm ,CON_STORE cs 
+			WHERE cr.menu_seq=cm.MENU_SEQ AND cr.store_seq=cs.STORE_SEQ AND CEIL(rn/5)=#{pnum} AND USER_ID =#{user_id}
+			ORDER BY rn   
+		</select> 
+		
+		<select id="getReserve" parameterType="Int" resultType="ReserveDto">
+			SELECT RESERVE_SEQ ,USER_ID ,MENU_SEQ ,STORE_SEQ ,RESERVE_TIME ,RESERVE_STATE ,RESERVE_PRICE ,RESERVE_REGDATE 
+			FROM CON_RESERVE 
+			WHERE RESERVE_SEQ =#{reserve_seq}
+		</select>
+		 
+		<select id="reserveMax" resultType="ReserveDto" parameterType="Map">
+			SELECT COUNT(cr.RESERVE_TIME) AS ct ,cr.RESERVE_TIME 
+			FROM CON_RESERVE cr, CON_STORE cs 
+			WHERE cr.STORE_SEQ =cs.STORE_SEQ  AND cr.STORE_SEQ =#{store_seq} AND cr.MENU_SEQ =#{menu_seq} AND cr.RESERVE_SDATE =#{reserve_sdate} AND cr.RESERVE_STATE='Y'
+			GROUP BY RESERVE_TIME 
+		</select> 
+		  
+		 <select id="stayReserve" resultType="ReserveDto" parameterType="Map">
+		 	SELECT RESERVE_SEQ,user_id,MENU_SEQ ,cr.STORE_SEQ ,RESERVE_TIME ,RESERVE_STATE ,RESERVE_PRICE ,RESERVE_SDATE ,RESERVE_EDATE ,RESERVE_REGDATE ,cs.STORE_MAXDATE
+			FROM CON_RESERVE cr,CON_STORE cs  
+			WHERE cr.STORE_SEQ =cs.STORE_SEQ AND cr.STORE_SEQ =#{store_seq} AND MENU_SEQ =#{menu_seq} AND RESERVE_STATE='Y'
+		 </select> 
+		 
+		 <update id="userReserveCancel" parameterType="Int">
+		 	UPDATE CON_RESERVE SET reserve_state='C' WHERE reserve_seq=#{reserve_seq}
+		 </update>
+		 
+		 <select id="userReservePhoto" parameterType="String" resultType="ReserveDto">
+		 	SELECT rn,reserve_seq,STORE_SEQ ,store_photo_stored
+			FROM (
+				SELECT ROW_NUMBER()over(PARTITION BY cr.RESERVE_SEQ ORDER BY RESERVE_SEQ DESC) AS rn,cr.RESERVE_SEQ ,cr.STORE_SEQ ,csp.STORE_PHOTO_STORED 
+				FROM CON_RESERVE cr,CON_STORE_PHOTO csp
+				WHERE cr.STORE_SEQ =csp.STORE_SEQ AND user_id=#{user_id})
+			WHERE rn=1
+		 </select> 
+		 
+		 <update id="reserveSuccess" parameterType="Int">
+		 	UPDATE CON_RESERVE SET RESERVE_STATE ='S',RESERVE_SUCCES='Y' WHERE RESERVE_SEQ =#{reserve_seq} 
+		 </update>
+		 
+		 <select id="userOnceReview" parameterType="Map" resultType="ReserveDto">
+		 	SELECT RESERVE_SEQ ,USER_ID ,STORE_SEQ ,RESERVE_STATE 
+			FROM CON_RESERVE 
+			WHERE STORE_SEQ =#{store_seq} AND USER_ID =#{user_id} AND RESERVE_STATE ='S'
+		 </select>
+		  
+		  
+		 <update id="userReviewSuccess" parameterType="Map">
+		 	UPDATE CON_RESERVE SET RESERVE_STATE ='N' WHERE USER_ID =#{user_id} AND STORE_SEQ =#{store_seq}
+		 </update> 
+		 
+		 <select id="reserveSuccessInfo" parameterType="Int" resultType="ReserveDto">
+		 	SELECT USER_ID ,RESERVE_TIME ,RESERVE_PRICE ,RESERVE_SDATE ,RESERVE_EDATE ,store_name,menu_name,store_phone
+			FROM CON_RESERVE cr,CON_STORE cs,CON_MENU cm 
+			WHERE RESERVE_SEQ =#{reserve_seq} AND cr.STORE_SEQ =cs.store_seq AND cr.MENU_SEQ =cm.MENU_SEQ
+		 </select>
+		 
+		 
+		 <select id="ownerStoreReserve" parameterType="Map" resultType="ReserveDto">
+		 	SELECT rn ,RESERVE_SEQ ,USER_ID ,MENU_SEQ ,STORE_SEQ,RESERVE_TIME ,RESERVE_PRICE ,RESERVE_SDATE ,RESERVE_EDATE ,RESERVE_REGDATE ,MENU_NAME,USER_EMAIL,RESERVE_REALDATE
+			FROM 	(SELECT ROW_NUMBER()OVER(ORDER BY RESERVE_REGDATE DESC) AS rn ,RESERVE_SEQ ,cr.USER_ID ,cr.MENU_SEQ ,cr.STORE_SEQ,RESERVE_TIME ,RESERVE_PRICE ,RESERVE_SDATE ,RESERVE_EDATE ,RESERVE_REGDATE ,cm.MENU_NAME ,cu.USER_EMAIL,to_char(RESERVE_REGDATE,'YYYY-MM-dd hh:mm') AS reserve_realdate
+					FROM CON_RESERVE cr ,CON_MENU cm ,CON_USER cu
+					WHERE cr.USER_ID =cu.USER_ID AND cr.STORE_SEQ =#{store_seq} AND cr.MENU_SEQ =cm.MENU_SEQ AND RESERVE_SUCCES ='N' AND cr.RESERVE_STATE ='Y')
+			WHERE CEIL(rn/5)=#{pnum}
+		 </select>
+		
+		 <select id="ownerStoreReserveSuccess" parameterType="Int" resultType="ReserveDto">
+		 	SELECT  rn ,RESERVE_SEQ ,USER_ID ,MENU_SEQ ,STORE_SEQ ,RESERVE_TIME ,RESERVE_PRICE ,RESERVE_SDATE ,RESERVE_EDATE ,RESERVE_REGDATE ,RESERVE_SUCCES ,reserve_realdate,MENU_NAME
+			FROM (SELECT ROW_NUMBER()OVER(ORDER BY RESERVE_REGDATE DESC) AS rn ,RESERVE_SEQ ,USER_ID ,cr.MENU_SEQ ,cr.STORE_SEQ ,RESERVE_TIME ,RESERVE_PRICE ,RESERVE_SDATE ,RESERVE_EDATE , RESERVE_REGDATE ,RESERVE_SUCCES,to_char(RESERVE_REGDATE,'YYYY-MM-dd hh:mm') AS reserve_realdate,cm.MENU_NAME 
+					FROM CON_RESERVE cr ,CON_MENU cm 
+					WHERE RESERVE_SUCCES ='Y' AND  cr.STORE_SEQ =#{store_seq} AND cr.MENU_SEQ =cm.MENU_SEQ )
+			WHERE CEIL(rn/5)=#{pnum}
+		 </select>
+		
+	</mapper>
+		  

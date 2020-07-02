@@ -1,0 +1,99 @@
+@charset "UTF-8";
+.star-input02>.input,
+.star-input02>.input>label:hover,
+.star-input02>.input>input:focus+label,
+.star-input02>.input>input:checked+label{
+    display: inline-block;
+    vertical-align: top;
+    background: url("./img/star_avg.png") no-repeat;
+} 
+.star-input02{
+    white-space: nowrap;
+}
+.star-input02>.input{
+    display:inline-block;
+    width: 100px;
+    background-size: 100px;
+    height: 19px;
+    white-space: nowrap;
+    overflow: hidden;
+    position: relative;  
+}
+.star-input02>.input>input{ 
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+}
+.star-input02>.input.focus{
+/*     outline: 1px dotted #ddd; */
+}
+.star-input02>.input>label{
+    width: 10px;
+    height: 0;
+    padding: 19px 0 0 0;
+/*     overflow: hidden; */
+    float: left;
+    cursor: pointer;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+.star-input02>.input>label:hover,
+.star-input02>.input>input:focus+label,
+.star-input02>.input>input:checked+label{
+    background-size: 100px;
+    background-position: 0 bottom;
+}
+.star-input02>.input>label:hover~label{
+    background-image: none;
+}
+.star-input02>output{
+    display: inline-block;
+    width: 36px;
+    text-align: right;
+}
+.star-input02>output>b{
+    font:bold 18px Helvetica, Arial, sans-serif;
+    vertical-align: middle;
+}
+.star-input02>.input>label[for="p1"]{ 
+    width: 10px;
+    z-index: 10;
+}
+.star-input02>.input>label[for="p2"]{ 
+    width: 20px;
+    z-index: 9;
+}
+.star-input02>.input>label[for="p3"]{ 
+    width: 30px;
+    z-index: 8;
+}
+.star-input02>.input>label[for="p4"]{ 
+    width: 40px;
+    z-index: 7;
+}
+.star-input02>.input>label[for="p5"]{ 
+    width: 50px;
+    z-index: 6;
+}
+.star-input02>.input>label[for="p6"]{ 
+    width: 60px;
+    z-index: 5;
+}
+.star-input02>.input>label[for="p7"]{ 
+    width: 70px;
+    z-index: 4;
+}
+.star-input02>.input>label[for="p8"]{ 
+    width: 80px;
+    z-index: 3;
+}
+.star-input02>.input>label[for="p9"]{ 
+    width: 90px;
+    z-index: 2;
+}
+.star-input02>.input>label[for="p10"]{ 
+    width: 100px;
+    z-index: 1;
+}

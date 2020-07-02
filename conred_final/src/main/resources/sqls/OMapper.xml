@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+   
+  
+<mapper namespace="com.hk.conred.O">
+	
+	<insert id="insertOwner" parameterType="ODto">
+		INSERT INTO CON_OWNER
+		VALUES(#{owner_id},#{owner_password},#{owner_name},
+		#{owner_email},#{owner_birth},#{owner_sex},SYSDATE,#{owner_agreement},'N')
+	</insert>
+	
+	<select id="ownerIdCheck" parameterType="String" resultType="String">
+		SELECT OWNER_ID FROM CON_OWNER WHERE OWNER_ID =#{owner_id}
+	</select>
+	 
+	<select id="getLogin" resultType="ODto" parameterType="Map">
+		SELECT OWNER_ID ,OWNER_NAME ,OWNER_EMAIL ,OWNER_BIRTH ,OWNER_SEX ,OWNER_REGDATE ,OWNER_AGREEMENT ,OWNER_OUT  
+		FROM CON_OWNER 
+		WHERE OWNER_ID =#{owner_id} AND OWNER_PASSWORD =#{owner_password}
+	</select> 
+	
+	<select id="ownerMyInfo" resultType="ODto" parameterType="String">
+		SELECT OWNER_ID ,OWNER_NAME ,OWNER_EMAIL ,OWNER_BIRTH ,OWNER_SEX ,OWNER_REGDATE 
+		FROM CON_OWNER 
+		WHERE OWNER_ID =#{owner_id}
+	</select>
+	 
+	<update id="ownerUpdate" parameterType="ODto">
+		UPDATE CON_OWNER SET OWNER_BIRTH=#{owner_birth},OWNER_NAME=#{owner_name},OWNER_SEX=#{owner_sex} WHERE OWNER_ID=#{owner_id}
+	</update>
+	
+	<update id="ownerDelete" parameterType="String">
+		UPDATE CON_OWNER SET OWNER_OUT='Y' WHERE OWNER_ID=#{owner_id}
+	</update>
+	
+	<select id="getState" parameterType="String" resultType="ODto">
+		SELECT RESERVE_COUNT,LIKE_COUNT ,PAY_COUNT,REPLY_COUNT ,QNA_COUNT,cs.STORE_SEQ
+		FROM 	CON_STORE cs,(SELECT COUNT(cr.reserve_seq) AS reserve_count
+				FROM con_store cs,CON_RESERVE cr 
+				WHERE cs.STORE_SEQ =cr.STORE_SEQ AND cs.OWNER_ID =#{owner_id} AND cr.reserve_succes!='Y' AND cr.reserve_state!='C') ,
+				(SELECT COUNT(cl.LIKE_LIST_SEQ) AS like_count 
+				FROM CON_STORE cs ,CON_LIKE cl
+				WHERE cs.store_seq=cl.STORE_SEQ AND cs.OWNER_ID =#{owner_id}) ,
+				(SELECT count(cr.RESERVE_SEQ) AS pay_count
+				FROM CON_STORE cs ,CON_RESERVE cr 
+				WHERE cs.STORE_SEQ =cr.STORE_SEQ AND cs.OWNER_ID =#{owner_id} AND cr.RESERVE_SUCCES ='Y') ,
+				(SELECT COUNT(cr.REPLY_SEQ) AS reply_count 
+				FROM CON_STORE cs ,CON_REPLY cr 
+				WHERE cs.STORE_SEQ =cr.STORE_SEQ AND OWNER_ID =#{owner_id} AND cr.REPLY_DELFLAG ='N'),
+				(SELECT COUNT(cq.QNA_SEQ) AS qna_count
+				FROM CON_STORE cs ,CON_QNA cq 
+				WHERE cs.STORE_SEQ =cq.STORE_SEQ AND OWNER_ID =#{owner_id} AND cq.qna_delflag='N')
+		WHERE OWNER_ID=#{owner_id}
+	</select>
+	
+	<select id="contentNewQna" parameterType="Int" resultType="ODto">
+		SELECT qna_read
+		FROM 	(SELECT qna_read 
+				FROM CON_QNA 
+				WHERE store_seq=#{store_seq} AND QNA_READ ='N' )
+	</select>
+	
+	
+	<select id="contentNewReply" parameterType="Int" resultType="ODto">
+		SELECT reply_read
+		FROM 	(SELECT reply_read 
+				FROM con_reply 
+				WHERE store_seq=#{store_seq} AND reply_read='N')
+	</select>
+	
+	<select id="ownerMyStoreInfoId" resultType="ODto" parameterType="Int">
+		SELECT OWNER_ID FROM CON_STORE WHERE STORE_SEQ =#{store_seq}
+	</select>
+	
+	
+	
+	<select id = "naver_confirm_id" parameterType="String" resultType="ODto">
+    	<![CDATA[
+    	SELECT *
+		FROM CON_OWNER
+		WHERE OWNER_ID=#{owner_id}
+		]]>
+     </select>
+	
+</mapper> 
+	 

@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+   
+  
+<mapper namespace="com.hk.conred.S">
+<!--      <insert id="insertStore" parameterType="SDto"> -->
+<!--      INSERT INTO CON_STORE VALUES(CON_STORE_SEQ.NEXTVAL,#{owner_id},#{store_name},#{store_owner_name}, -->
+<!--      #{store_path},#{store_intro_simple},#{store_intro},#{store_state},#{store_phone},#{store_phone_manager},#{store_address}, -->
+<!--      #{store_address_detail},#{store_time_other},#{store_bank},#{store_account},#{store_license_number}, -->
+<!--      #{store_license_biz_origin},#{store_license_biz_stored},#{store_license_biz_size}, -->
+<!--      #{store_license_sales_origin},#{store_license_sales_stored},#{store_license_sales_size}, -->
+<!--      #{store_owner_phone},#{store_agreement},'N',#{store_maxdate},#{store_maxman}) -->
+<!--      INSERT INTO CON_STORE VALUES(CON_STORE_SEQ.NEXTVAL,'사장아이디','매장이름','사장이름2', -->
+<!--      'www.naver.com','간단소개','상세소개','O','02-0000-0000','010-0000-0000','주소주소주소', -->
+<!--      '상세주소 102호','사장 원하는대로 쉽니다. 전화하고오세요.','국민은행','000-000-000000','000-00-00000', -->
+<!--      '사업원본파일명','사업저장파일명','사업파일사이즈', -->
+<!-- 	  '영업원본파일명','영업저장파일명','영업파일사이즈', --> 
+<!--      '010-0000-4545','Y','Y',0,3); -->
+<!--      </insert> -->
+
+     <insert id="insertStoreCertify" parameterType="SDto">
+	     INSERT INTO CON_STORE VALUES(CON_STORE_SEQ.NEXTVAL,#{owner_id},null,#{store_owner_name},
+	     null,null,null,null,null,null,null,
+	     null,null,null,null,#{store_license_number},
+	     #{store_license_biz_origin},#{store_license_biz_stored},#{store_license_biz_size},
+	     #{store_license_sales_origin},#{store_license_sales_stored},#{store_license_sales_size},
+	     #{store_owner_phone},#{store_agreement},'N',null,null)
+<!--      INSERT INTO CON_STORE VALUES(CON_STORE_SEQ.NEXTVAL,'사장아이디','매장이름','사장이름2', -->
+<!--      'www.naver.com','간단소개','상세소개','O','02-0000-0000','010-0000-0000','주소주소주소', -->
+<!--      '상세주소 102호','사장 원하는대로 쉽니다. 전화하고오세요.','국민은행','000-000-000000','000-00-00000', -->
+<!--      '사업원본파일명','사업저장파일명','사업파일사이즈', -->
+<!-- 	  '영업원본파일명','영업저장파일명','영업파일사이즈', --> 
+<!--      '010-0000-4545','Y','Y',0,3); -->
+     </insert>
+     
+     <update id="updateStoreInfo"  parameterType="SDto">
+		UPDATE CON_STORE SET 
+		store_name=#{store_name},
+		store_path=#{store_path},
+		store_intro_simple=#{store_intro_simple},
+		store_intro=#{store_intro},
+		store_state=#{store_state},
+		store_phone=#{store_phone},
+		store_phone_manager=#{store_phone_manager},
+		store_address=#{store_address},
+		store_address_detail=#{store_address_detail},
+		store_time_other=#{store_time_other},
+		store_bank=#{store_bank},
+		store_account=#{store_account}
+		WHERE STORE_SEQ =#{store_seq}
+     </update>
+     
+     <update id="updateStoreMenu"  parameterType="SDto">
+		UPDATE CON_STORE SET
+		store_maxdate=#{store_maxdate},
+		store_maxman=#{store_maxman}
+		WHERE STORE_SEQ =#{store_seq}
+     </update>
+ 
+	 <select id="selectStoreSeq" parameterType="ODto" resultType="SDto">
+<!-- 		SELECT cs.STORE_SEQ -->
+<!-- 		FROM CON_OWNER co, CON_STORE cs -->
+<!-- 		WHERE co.OWNER_ID =cs.OWNER_ID -->
+<!-- 		AND cs.OWNER_ID =#{owner_id} -->
+		<![CDATA[ 
+			SELECT *
+			FROM CON_OWNER co, CON_STORE cs
+			WHERE co.OWNER_ID =cs.OWNER_ID
+			AND cs.OWNER_ID =#{owner_id}
+		]]>
+	 </select> 
+	 
+	 <select id="selectStoreDetail" parameterType="int" resultType="SDto">
+	 	<![CDATA[ 
+			SELECT *
+			FROM CON_STORE
+			WHERE STORE_SEQ =#{store_seq}
+		]]>
+	 </select>
+	
+	<select id="StoreSeqList" parameterType="Map" resultType="SDto">
+		<![CDATA[ 
+		SELECT *
+		FROM CON_STORE
+		]]>
+		<foreach collection="list" item="item">
+		WHERE STORE_SEQ =#{item.store_seq}
+		</foreach>
+
+	</select>
+   
+   	<select id="updateStoreCertify" parameterType="SDto">
+	   	UPDATE CON_STORE 
+		SET
+			STORE_LICENSE_NUMBER =#{store_license_number},
+			STORE_OWNER_PHONE =#{store_owner_phone},
+			STORE_OWNER_NAME =#{store_owner_name},
+			STORE_LICENSE_BIZ_ORIGIN =#{store_license_biz_origin},
+			STORE_LICENSE_BIZ_STORED =#{store_license_biz_stored},
+			STORE_LICENSE_BIZ_SIZE =#{store_license_biz_size},
+			STORE_LICENSE_SALES_ORIGIN =#{store_license_sales_origin},
+			STORE_LICENSE_SALES_STORED =#{store_license_sales_stored},
+			STORE_LICENSE_SALES_SIZE =#{store_license_sales_size}
+		WHERE STORE_SEQ =#{store_seq}
+   	</select>
+   
+</mapper>

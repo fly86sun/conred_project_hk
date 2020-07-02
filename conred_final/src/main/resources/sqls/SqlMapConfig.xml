@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration
+  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-config.dtd">
+  
+<configuration>
+
+
+<!-- 	Dto객체의 변수 설정 -->
+	<typeAliases>
+<!-- 		유저,점주관련 -->
+		<typeAlias type="com.hk.conred.dtos.UDto" alias="UDto"/>
+		<typeAlias type="com.hk.conred.dtos.ODto" alias="ODto"/>
+		
+		<typeAlias type="com.hk.conred.dtos.InterestsDto" alias="InterestsDto"/>
+		<typeAlias type="com.hk.conred.dtos.ReserveDto" alias="ReserveDto"/>
+		<typeAlias type="com.hk.conred.dtos.ReplyDto" alias="ReplyDto"/>
+		<typeAlias type="com.hk.conred.dtos.QnaDto" alias="QnaDto"/>
+		<typeAlias type="com.hk.conred.dtos.LikeDto" alias="LikeDto"/>
+		<typeAlias type="com.hk.conred.dtos.RPhotoDto" alias="RPhotoDto"/>
+<!-- 		매장관련 -->
+		<typeAlias type="com.hk.conred.dtos.SDto" alias="SDto"/>
+		
+		<typeAlias type="com.hk.conred.dtos.SPhotoDto" alias="SPhotoDto"/>
+		<typeAlias type="com.hk.conred.dtos.SLocaDto" alias="SLocaDto"/>
+		<typeAlias type="com.hk.conred.dtos.STimeDto" alias="STimeDto"/>
+		
+		<typeAlias type="com.hk.conred.dtos.CMainDto" alias="CMainDto"/>
+		<typeAlias type="com.hk.conred.dtos.CListDto" alias="CListDto"/>
+		<typeAlias type="com.hk.conred.dtos.MenuDto" alias="MenuDto"/>
+		
+<!-- 		지하철관련 -->
+		<typeAlias type="com.hk.conred.dtos.SubwayDto" alias="SubwayDto"/>
+		
+	</typeAliases>
+ 
+
+  
+   
+  
+  	<mappers>
+<!-- 		유저,점주관련 -->
+    	<mapper resource="./sqls/UMapper.xml"/>
+    	<mapper resource="./sqls/OMapper.xml"/>
+    	<mapper resource="./sqls/AMapper.xml"/>
+
+    	<mapper resource="./sqls/InterestsMapper.xml"/>   	
+    	<mapper resource="./sqls/ReserveMapper.xml"/>
+    	<mapper resource="./sqls/ReplyMapper.xml"/>
+    	<mapper resource="./sqls/QnaMapper.xml"/>
+    	<mapper resource="./sqls/LikeMapper.xml"/>
+    	<mapper resource="./sqls/RPhotoMapper.xml"/>
+<!-- 		매장관련 -->
+    	<mapper resource="./sqls/SMapper.xml"/>
+    	
+    	<mapper resource="./sqls/SPhotoMapper.xml"/>
+    	<mapper resource="./sqls/SLocaMapper.xml"/>
+    	<mapper resource="./sqls/STimeMapper.xml"/>
+    	
+    	<mapper resource="./sqls/CMainMapper.xml"/>
+    	<mapper resource="./sqls/CListMapper.xml"/>
+    	<mapper resource="./sqls/MenuMapper.xml"/>
+
+<!-- 		지도관련 -->
+    	<mapper resource="./sqls/MapMapper.xml"/>
+    	<mapper resource="./sqls/SubwayMapper.xml"/>
+  	</mappers>
+</configuration>
+

@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<mapper namespace="com.hk.conred.A">
+              <!--    모든 유저를 보거나 DB에 있는 모든 키워드로 조회하는 기능 -->
+	<select id="admin_site_userlist" resultType="UDto"
+		parameterType="String">
+     	<![CDATA[ 
+     	SELECT USER_ID, USER_NAME, USER_EMAIL, USER_BIRTH, USER_SEX, USER_REGDATE, USER_AGREEMENT,
+     	USER_OUT, USER_BLACK, USER_ROLE, USER_POINT        
+		FROM CON_USER   
+		WHERE (USER_ID LIKE '%'||#{keyword}||'%' OR USER_NAME LIKE '%'||#{keyword}||'%' OR USER_EMAIL LIKE '%'||#{keyword}||'%' OR USER_BIRTH LIKE '%'||#{keyword}||'%' 
+	    OR USER_SEX LIKE '%'||#{keyword}||'%' OR USER_REGDATE LIKE '%'||#{keyword}||'%' OR USER_AGREEMENT LIKE '%'||#{keyword}||'%' OR USER_OUT LIKE '%'||#{keyword}||'%' OR 
+		USER_BLACK LIKE '%'||#{keyword}||'%' OR USER_ROLE LIKE '%'||#{keyword}||'%' OR USER_POINT LIKE '%'||#{keyword}||'%')
+		ORDER BY USER_REGDATE DESC
+     	]]>
+	</select>
+		<!-- 모든 블랙 유저 목록을 조회하거나 유저 아이디 유저 이름으로 블랜유저중에서 검색할 수 있는 기능 -->
+	<select id="admin_blackuser_search" resultType="UDto"
+		parameterType="String">
+     	<![CDATA[ 
+     	SELECT *
+     	FROM CON_USER
+     	WHERE USER_BLACK = 'Y' AND (USER_ID LIKE '%'||#{keyword}||'%' OR USER_NAME LIKE '%'||#{keyword}||'%')
+     	ORDER BY USER_REGDATE DESC
+     	]]>
+	</select>
+
+		<!--       모든 점주 DB에 있는모든 키워드로 조회하기 기능 -->
+	<select id="admin_site_ownerlist" resultType="ODto"
+		parameterType="String">
+     	<![CDATA[ 
+     	SELECT OWNER_ID, OWNER_NAME, OWNER_EMAIL, OWNER_BIRTH, OWNER_SEX, OWNER_REGDATE, OWNER_AGREEMENT, OWNER_OUT  
+     	FROM CON_OWNER
+		WHERE (OWNER_ID LIKE '%'||#{keywordowner}||'%' OR OWNER_NAME LIKE '%'||#{keywordowner}||'%' 
+		OR OWNER_EMAIL LIKE '%'||#{keywordowner}||'%' OR OWNER_BIRTH LIKE '%'||#{keywordowner}||'%' 
+	    OR OWNER_SEX LIKE '%'||#{keywordowner}||'%' OR OWNER_REGDATE LIKE '%'||#{keywordowner}||'%' 
+	    OR OWNER_AGREEMENT LIKE '%'||#{keywordowner}||'%' OR OWNER_OUT LIKE '%'||#{keywordowner}||'%')
+		ORDER BY OWNER_REGDATE DESC
+		]]>
+	</select>
+		<!-- 체크 또는 다중 체크해서 점주 탈퇴처리 기능 -->
+	<update id="adminMuldelOwner" parameterType="map">
+		<![CDATA[ 
+		UPDATE CON_OWNER SET OWNER_OUT =
+		(CASE
+		WHEN OWNER_OUT = 'Y' THEN 'N'
+		WHEN OWNER_OUT = 'N' THEN 'Y'
+		END)
+		WHERE OWNER_ID IN
+		]]>
+		<foreach collection="owner_ids" open="(" close=")"
+			separator="," item="owner_id">
+			#{owner_id}
+		</foreach>
+	</update>
+
+		<!-- 모든 상점 DB에 있는 모든 키워드로 조회하기 기능 -->
+	<select id="admin_site_storelist" resultType="SDto"
+		parameterType="String">
+     	<![CDATA[ 
+     	SELECT *    
+		FROM CON_STORE   
+		WHERE (STORE_SEQ LIKE '%'||#{keywordstore}||'%' OR OWNER_ID LIKE '%'||#{keywordstore}||'%' 
+		OR STORE_NAME LIKE '%'||#{keywordstore}||'%' OR STORE_OWNER_NAME LIKE '%'||#{keywordstore}||'%' 
+		OR STORE_PATH LIKE '%'||#{keywordstore}||'%' OR STORE_INTRO_SIMPLE LIKE '%'||#{keywordstore}||'%' 
+		OR STORE_INTRO LIKE '%'||#{keywordstore}||'%' OR STORE_STATE LIKE '%'||#{keywordstore}||'%' 
+		OR STORE_PHONE LIKE '%'||#{keywordstore}||'%' OR STORE_PHONE_MANAGER LIKE '%'||#{keywordstore}||'%' 
+		OR STORE_ADDRESS LIKE '%'||#{keywordstore}||'%' OR STORE_ADDRESS_DETAIL LIKE '%'||#{keywordstore}||'%'
+		OR STORE_TIME_OTHER LIKE '%'||#{keywordstore}||'%' OR STORE_BANK LIKE '%'||#{keywordstore}||'%'
+		OR STORE_ACCOUNT LIKE '%'||#{keywordstore}||'%' OR STORE_LICENSE_NUMBER LIKE '%'||#{keywordstore}||'%'
+		OR STORE_LICENSE_BIZ_ORIGIN LIKE '%'||#{keywordstore}||'%' OR STORE_LICENSE_BIZ_STORED LIKE '%'||#{keywordstore}||'%'
+		OR STORE_LICENSE_BIZ_SIZE LIKE '%'||#{keywordstore}||'%' OR STORE_LICENSE_SALES_ORIGIN LIKE '%'||#{keywordstore}||'%'
+		OR STORE_LICENSE_SALES_STORED LIKE '%'||#{keywordstore}||'%' OR STORE_LICENSE_SALES_SIZE LIKE '%'||#{keywordstore}||'%'
+		OR STORE_OWNER_PHONE LIKE '%'||#{keywordstore}||'%' OR STORE_AGREEMENT LIKE '%'||#{keywordstore}||'%'
+		OR STORE_ADMIN_STATE LIKE '%'||#{keywordstore}||'%' OR STORE_MAXDATE LIKE '%'||#{keywordstore}||'%' 
+		OR STORE_MAXMAN LIKE '%'||#{keywordstore}||'%') ORDER BY STORE_SEQ DESC
+     	]]>
+	</select>
+		<!-- 관리자 승인된 모든 점포 조회 및 상점 이름과 상점 주인 이름으로 검색하기 -->
+	<select id="admin_store_state_search" resultType="SDto"
+		parameterType="String">
+     	<![CDATA[ 
+     	SELECT *
+     	FROM CON_STORE
+     	WHERE STORE_ADMIN_STATE = 'Y' AND (OWNER_ID LIKE '%'||#{keywordstore}||'%' OR STORE_NAME LIKE '%'||#{keywordstore}||'%'
+     	OR STORE_OWNER_NAME LIKE '%'||#{keywordstore}||'%') ORDER BY STORE_SEQ DESC
+     	]]>
+	</select>
+		
+		<!-- 관리자 미승인된 모든 점포 조회 및 상점 이름과 상점 주인 이름으로 검색하기 -->
+	<select id="admin_store_state_search_n" resultType="SDto"
+		parameterType="String">
+     	<![CDATA[ 
+     	SELECT *
+     	FROM CON_STORE
+     	WHERE STORE_ADMIN_STATE = 'N' AND (OWNER_ID LIKE '%'||#{keywordstore}||'%' OR STORE_NAME LIKE '%'||#{keywordstore}||'%'
+     	OR STORE_OWNER_NAME LIKE '%'||#{keywordstore}||'%') ORDER BY STORE_SEQ DESC
+     	]]>
+	</select>
+	
+	
+		<!--     체크 또는 다중체크해서 매장 승인/취소 승인된 매장은 취소 취소된 매장은 승인하는 기능 -->
+	<update id="adminMulchk" parameterType="map">
+		<![CDATA[ 
+		UPDATE CON_STORE SET STORE_ADMIN_STATE =
+		(CASE
+		WHEN STORE_ADMIN_STATE = 'Y' THEN 'N'
+		WHEN STORE_ADMIN_STATE = 'N' THEN 'Y'
+		END)
+		WHERE STORE_SEQ IN ]]>
+		<foreach collection="store_seqs" open="(" close=")"
+			separator="," item="store_seq">
+			#{store_seq}
+		</foreach>
+	</update>
+		<!-- 		매장 정보 상태 변경 기능 -->
+	<update id="adminMuldel" parameterType="map">
+		<![CDATA[ 
+		UPDATE CON_STORE SET STORE_STATE =
+		(CASE
+		WHEN STORE_STATE = 'O' THEN 'C'
+		WHEN STORE_STATE = 'C' THEN 'O'
+		WHEN STORE_STATE = 'B' THEN 'C'
+		WHEN STORE_STATE = 'X' THEN 'C'
+		END)
+		WHERE STORE_SEQ IN ]]>
+		<foreach collection="store_seqs" open="(" close=")"
+			separator="," item="store_seq">
+			#{store_seq}
+		</foreach>
+	</update>
+		<!-- 	  유저 정보 삭제 기능 -->
+	<update id="adminMuldelUser" parameterType="map">
+		<![CDATA[  
+		UPDATE CON_USER SET USER_OUT =
+		(CASE
+		WHEN USER_OUT = 'Y' THEN 'N'
+		WHEN USER_OUT = 'N' THEN 'Y'
+		END)
+		WHERE USER_ID IN ]]>
+		<foreach collection="user_ids" open="(" close=")"
+			separator="," item="user_id">
+			#{user_id}
+		</foreach>
+	</update>
+	
+	
+</mapper>

@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+   
+  
+<mapper namespace="com.hk.conred.Interests">
+
+	<resultMap type="com.hk.conred.dtos.SDto"  id="sDtoMap">
+		<result property="store_seq" column="STORE_SEQ" />
+		<result property="owner_id" column="OWNER_ID" />
+		<result property="store_name" column="STORE_NAME" />
+		<result property="store_state" column="STORE_STATE" />
+		<collection property="cDto" resultMap="cDtoMap"></collection>
+		<collection property="iDto" resultMap="interestsDtoMap"></collection>
+		<collection property="spDto" resultMap="SPhotoDtoMap"></collection>
+	</resultMap>
+	
+	<resultMap type="com.hk.conred.dtos.CDto"  id="cDtoMap">
+		<result property="category_code" column="CATEGORY_CODE" />
+		<result property="category_name" column="CATEGORY_NAME" />
+	</resultMap>
+	
+	<resultMap type="com.hk.conred.dtos.InterestsDto"  id="interestsDtoMap">
+		<result property="user_id" column="USER_ID" />
+	</resultMap>
+	
+	<resultMap type="com.hk.conred.dtos.SPhotoDto"  id="SPhotoDtoMap">
+		<result property="store_photo_stored" column="STORE_PHOTO_STORED" />
+	</resultMap>
+<!-- 	 관심사 추천 기능  -->
+	<select id="user_interests_recommended"  parameterType="Map" resultMap="sDtoMap">
+		SELECT STORE_SEQ , STORE_PHOTO_STORED, STORE_NAME, STORE_STATE
+		FROM (
+			SELECT ROWNUM AS RNUM, USER_ID ,CATEGORY_CODE , CATEGORY_NAME, STORE_SEQ, STORE_PHOTO_STORED,OWNER_ID ,STORE_NAME, STORE_STATE
+			FROM (
+				SELECT ROW_NUMBER() over(PARTITION BY B.STORE_SEQ ORDER BY B.STORE_PHOTO_STORED) AS RN, A.USER_ID ,A.CATEGORY_CODE, 
+				A.CATEGORY_NAME, B.STORE_SEQ, B.STORE_PHOTO_STORED, B.OWNER_ID, B.STORE_NAME, B.STORE_STATE
+				FROM ( SELECT U.USER_ID ,C.CATEGORY_CODE , C.CATEGORY_NAME
+				        FROM CON_USER U, CON_INTERESTS I, CON_CATEGORY C
+				        WHERE U.USER_ID = I.USER_ID AND I.CATEGORY_CODE = C.CATEGORY_CODE AND U.USER_ID = #{user_id}) A,
+				      ( SELECT S.STORE_SEQ, S.OWNER_ID, S.STORE_NAME, M.CATEGORY_CODE, P.STORE_PHOTO_STORED ,S.STORE_STATE
+				        FROM CON_STORE S, CON_CATEGORY_MAIN M, CON_STORE_PHOTO P 
+				        WHERE S.STORE_SEQ = M.STORE_SEQ AND S.STORE_SEQ = P.STORE_SEQ) B
+				WHERE A.CATEGORY_CODE = B.CATEGORY_CODE
+				) 
+			WHERE RN = 1
+			)
+		WHERE CEIL(RNUM/10) =#{paging}
+<!-- 		SELECT STORE_SEQ , STORE_PHOTO_STORED, STORE_NAME -->
+<!-- 		FROM ( -->
+<!-- 			SELECT ROWNUM AS RNUM, USER_ID ,CATEGORY_CODE , CATEGORY_NAME, STORE_SEQ, STORE_PHOTO_STORED,OWNER_ID ,STORE_NAME -->
+<!-- 			FROM ( -->
+<!-- 				SELECT ROW_NUMBER() over(PARTITION BY B.STORE_SEQ ORDER BY B.STORE_PHOTO_STORED) AS RN, A.USER_ID ,A.CATEGORY_CODE,  -->
+<!-- 				A.CATEGORY_NAME, B.STORE_SEQ, B.STORE_PHOTO_STORED, B.OWNER_ID, B.STORE_NAME -->
+<!-- 				FROM ( SELECT U.USER_ID ,C.CATEGORY_CODE , C.CATEGORY_NAME -->
+<!-- 				        FROM CON_USER U, CON_INTERESTS I, CON_CATEGORY C -->
+<!-- 				        WHERE U.USER_ID = I.USER_ID AND I.CATEGORY_CODE = C.CATEGORY_CODE AND U.USER_ID = #{user_id}) A, -->
+<!-- 				      ( SELECT S.STORE_SEQ, S.OWNER_ID, S.STORE_NAME, M.CATEGORY_CODE, P.STORE_PHOTO_STORED  -->
+<!-- 				        FROM CON_STORE S, CON_CATEGORY_MAIN M, CON_STORE_PHOTO P  -->
+<!-- 				        WHERE S.STORE_SEQ = M.STORE_SEQ AND S.STORE_SEQ = P.STORE_SEQ) B -->
+<!-- 				WHERE A.CATEGORY_CODE = B.CATEGORY_CODE -->
+<!-- 				)  -->
+<!-- 			WHERE RN = 1 -->
+<!-- 			) -->
+<!-- 		WHERE CEIL(RNUM/10) =#{paging} -->
+	 </select>
+<!-- 	 관심사 추천 기능 페이징 처리 -->
+	<select id="user_interests_count" parameterType="String"
+		resultType="int">
+		<![CDATA[
+		SELECT CEIL(COUNT(*)/20) AS count
+		FROM (
+		SELECT ROW_NUMBER() over(PARTITION BY B.STORE_SEQ ORDER BY
+		B.STORE_PHOTO_STORED) AS RN, A.USER_ID ,A.CATEGORY_CODE ,
+		A.CATEGORY_NAME, B.STORE_SEQ, B.STORE_PHOTO_STORED
+		,B.OWNER_ID ,B.STORE_NAME
+		FROM ( SELECT U.USER_ID ,C.CATEGORY_CODE , C.CATEGORY_NAME
+		FROM CON_USER U, CON_INTERESTS I, CON_CATEGORY C
+		WHERE U.USER_ID = I.USER_ID AND I.CATEGORY_CODE = C.CATEGORY_CODE AND
+		U.USER_ID = #{user_id}) A,
+		( SELECT S.STORE_SEQ, S.OWNER_ID, S.STORE_NAME, M.CATEGORY_CODE,
+		P.STORE_PHOTO_STORED
+		FROM CON_STORE S, CON_CATEGORY_MAIN M, CON_STORE_PHOTO P
+		WHERE S.STORE_SEQ = M.STORE_SEQ AND S.STORE_SEQ = P.STORE_SEQ) B
+		WHERE
+		A.CATEGORY_CODE = B.CATEGORY_CODE
+		)
+		WHERE RN = 1
+	    ]]>
+	</select>
+	 
+	
+	<!-- 임시로 아이디 test로 넣어줌 #{user_id}로 바꿔야됨 -->
+	 <insert id="insertInterests" parameterType="InterestsDto">
+		INSERT ALL  
+		 <foreach collection="category_codes" item="codename">
+			INTO CON_INTERESTS
+			VALUES(get_interests_seq,#{user_id},#{codename})
+		 </foreach> 
+		SELECT *FROM DUAL	
+	 </insert>
+	
+	 <select id="userInterests" parameterType="String" resultType="InterestsDto">
+		SELECT INTERESTS_SEQ ,USER_ID ,category_code 
+		FROM CON_INTERESTS WHERE USER_ID=#{user_id} 
+	 </select>
+</mapper>
+	   

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+   
+  
+<mapper namespace="com.hk.conred.CList">
+	<insert id="insertCList" parameterType="CListDto">
+		INSERT ALL  
+		<foreach collection="list" item="item">
+			INTO CON_CATEGORY_LIST
+			VALUES(get_category_list_seq,#{item.store_seq},#{item.category_code_small})
+		</foreach>
+		SELECT *FROM DUAL
+	</insert>
+	
+	<select id="selectCList" parameterType="int" resultType="CListDto">
+		<![CDATA[
+			SELECT *
+			FROM CON_CATEGORY_LIST ccl, CON_CATEGORY_SMALL ccs 
+			WHERE ccl.CATEGORY_CODE_SMALL =ccs.CATEGORY_CODE_SMALL 
+			AND STORE_SEQ =#{store_seq}
+		]]>
+	</select>
+	
+	<delete id="deleteCList" parameterType="SDto">
+		DELETE FROM CON_CATEGORY_LIST ccl  
+		WHERE STORE_SEQ =#{store_seq}
+	</delete>
+ 		
+</mapper>

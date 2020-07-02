@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+   
+  
+<mapper namespace="com.hk.conred.Reply">
+	
+	<insert id="userInsertReview" parameterType="Map">
+		INSERT INTO CON_REPLY 
+		VALUES(CON_REPLY_SEQ.NEXTVAL,#{user_id},#{store_seq},#{reply_content},#{reply_clean},#{reply_price},#{reply_service},NULL,'N',sysdate,'N')
+	</insert> 
+	
+	<select id="replyList" parameterType="Map" resultType="ReplyDto">
+		SELECT cr.rn,cr.STORE_SEQ,REPLY_SEQ ,USER_ID  ,REPLY_CONTENT  ,REPLY_CLEAN ,REPLY_PRICE ,REPLY_SERVICE ,REPLY_ANSWER ,REPLY_READ ,REPLY_REGDATE ,REPLY_DELFLAG,cs.STORE_NAME,TO_CHAR(REPLY_REGDATE,'YYYY-MM-dd hh:mm') AS reply_realdate
+		FROM (SELECT ROW_NUMBER()OVER(ORDER BY REPLY_REGDATE DESC) AS rn,STORE_SEQ,USER_ID ,REPLY_CONTENT ,REPLY_SEQ ,REPLY_CLEAN ,REPLY_PRICE ,REPLY_SERVICE ,REPLY_ANSWER ,REPLY_READ ,REPLY_REGDATE ,REPLY_DELFLAG
+		FROM CON_REPLY WHERE USER_ID =#{user_id} AND REPLY_DELFLAG ='N') cr,(SELECT STORE_SEQ ,store_name FROM CON_STORE ) cs
+		WHERE user_id=#{user_id} and CEIL(rn/5)=#{pnum} AND cr.store_seq=cs.store_seq
+	</select>
+	 
+	<select id="replyListStore" parameterType="int" resultType="ReplyDto">
+		<![CDATA[
+			SELECT * 
+			FROM CON_REPLY 
+			WHERE STORE_SEQ=${store_seq}
+			ORDER BY REPLY_REGDATE DESC 
+		]]>
+	</select> 
+	
+	<select id="replyAvgStore" parameterType="int" resultType="ReplyDto">
+		<![CDATA[
+			SELECT TRUNC(AVG(REPLY_CLEAN),1) AS clean_avg,
+			TRUNC(AVG(REPLY_SERVICE ),1) AS service_avg,
+			TRUNC(AVG(REPLY_PRICE),1) AS price_avg,
+			TRUNC((AVG(REPLY_CLEAN)+AVG(REPLY_SERVICE)+AVG(REPLY_PRICE))/3,1) AS all_avg,
+			COUNT(REPLY_CONTENT) AS reply_count ,
+			COUNT(REPLY_ANSWER) AS answer_count
+			FROM con_REPLY
+			WHERE STORE_SEQ =#{store_seq}
+		]]>
+	</select>
+	
+	<select id="replyListStoreDetail" parameterType="Map" resultType="ReplyDto">
+		SELECT rn,REPLY_SEQ ,USER_ID ,STORE_SEQ ,REPLY_CONTENT ,REPLY_CLEAN ,REPLY_PRICE ,REPLY_SERVICE ,REPLY_ANSWER ,REPLY_READ,REPLY_REGDATE ,REPLY_DELFLAG, to_char(reply_regdate, 'YYYY-MM-dd hh:mm') AS reply_realdate
+		FROM 
+			(SELECT ROW_NUMBER()over(ORDER BY REPLY_REGDATE DESC) AS rn,REPLY_SEQ ,USER_ID ,STORE_SEQ ,REPLY_CONTENT ,REPLY_CLEAN ,REPLY_PRICE ,REPLY_SERVICE ,REPLY_ANSWER ,REPLY_READ,REPLY_REGDATE ,REPLY_DELFLAG
+			FROM CON_REPLY
+			WHERE STORE_SEQ =#{store_seq} AND REPLY_DELFLAG ='N') 
+		WHERE CEIL(rn/5)=#{pnum} 
+	</select>
+	
+	<update id="userReplyDelete" parameterType="Map">
+		UPDATE con_reply SET REPLY_DELFLAG ='Y' WHERE USER_ID =#{user_id} AND REPLY_SEQ =#{reply_seq}
+	</update>
+	
+	<select id="userReplyStorePhoto" resultType="ReplyDto" parameterType="String">
+		SELECT rn,reply_seq,STORE_SEQ ,store_photo_stored
+		FROM (
+			SELECT  ROW_NUMBER()over(PARTITION BY cr.REPLY_SEQ ORDER BY REPLY_SEQ ) AS rn,cr.reply_SEQ ,cr.STORE_SEQ ,csp.STORE_PHOTO_STORED 
+			FROM CON_reply cr,CON_STORE_PHOTO csp
+			WHERE cr.STORE_SEQ =csp.STORE_SEQ AND user_id=#{user_id})
+		WHERE rn=1
+	</select>
+	 
+	<select id="modalStoreName" parameterType="Int" resultType="ReplyDto">
+		SELECT store_name,owner_id FROM con_store WHERE store_seq=#{store_seq}
+	</select>
+		
+	<insert id="adminInsertReview" parameterType="Map">
+		INSERT INTO CON_REPLY 
+		VALUES(CON_REPLY_SEQ.NEXTVAL,'admin',#{store_seq},'상당히 멋진 매장이네요!',5,5,5,NULL,'N',sysdate,'N')
+	</insert>
+	
+	<update id="ownerAnswer" parameterType="Map">
+		UPDATE CON_REPLY SET REPLY_ANSWER =#{reply_answer} WHERE REPLY_SEQ =#{reply_seq}
+	</update>
+	
+	
+	<update id="ownerReplyRead" parameterType="Int"> 
+		UPDATE CON_REPLY SET reply_read='Y' WHERE store_seq=#{store_seq}
+	</update>
+	
+	
+</mapper>
+	 

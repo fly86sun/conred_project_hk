@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+   
+  
+<mapper namespace="com.hk.conred.Subway">
+	<select id="subway_search" resultType="SubwayDto" parameterType="String">
+		SELECT csb.SUBWAY_CODE , csb.SUBWAY_NAME, csb.SUBWAY_LATITUDE , csb.SUBWAY_LONGITUDE 
+		FROM CON_SUBWAY csb
+		WHERE csb.SUBWAY_NAME =#{keyword}
+		AND rownum=1
+	</select>
+	
+<!-- 	<select id="subway_autocomplete"> -->
+<!-- 	</select> -->
+
+</mapper>

@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+   
+<mapper namespace="con.hk.conred.Map">
+	
+<!-- 	맵으로 이동할때 :전체-->
+	<select id="searchCateAll" parameterType="String" resultType="SDto">
+<!-- 		SELECT cs.STORE_SEQ ,cs.STORE_NAME ,cs.STORE_INTRO_SIMPLE,cs.STORE_STATE,cs.STORE_PHONE, cs.STORE_ADDRESS ,cs.STORE_ADDRESS_DETAIL ,ccm.CATEGORY_CODE -->
+<!-- 		FROM CON_STORE_LOCATION csl ,CON_STORE cs, CON_CATEGORY_MAIN ccm  -->
+<!-- 		WHERE cs.STORE_SEQ =csl.STORE_SEQ -->
+<!-- 		AND cs.STORE_SEQ =ccm.STORE_SEQ -->
+<!-- 		AND STORE_LATITUDE BETWEEN #{swlat} AND #{nelat} -->
+<!-- 		AND STORE_LONGITUDE BETWEEN #{swlng} AND #{nelng} -->
+<!-- 		AND STORE_ADMIN_STATE ='Y' -->
+
+		SELECT cs.store_seq, cs.store_address, ccm.CATEGORY_CODE 
+		FROM CON_STORE cs, CON_CATEGORY_MAIN ccm
+		WHERE cs.STORE_SEQ = ccm.STORE_SEQ
+		AND STORE_ADMIN_STATE ='Y'
+	</select>
+	
+<!-- 	맵으로 이동할때 :카테고리-->
+	<select id="searchCate" parameterType="String" resultType="SDto">
+		SELECT cs.store_seq, ccm.CATEGORY_CODE 
+		FROM CON_STORE cs, CON_CATEGORY_MAIN ccm
+		WHERE cs.STORE_SEQ = ccm.STORE_SEQ
+		AND ccm.CATEGORY_CODE =#{category_code}
+		AND STORE_ADMIN_STATE ='Y'
+	</select>
+	
+	
+<!-- 	ajax 화면상의 매장 검색 : 전체 -->
+	<select id="searchCateAll_ajax" parameterType="String" resultType="SDto">
+		SELECT cs.STORE_SEQ ,cs.STORE_NAME ,cs.STORE_INTRO_SIMPLE,cs.STORE_STATE,cs.STORE_PHONE,
+		cs.STORE_ADDRESS ,cs.STORE_ADDRESS_DETAIL ,ccm.CATEGORY_CODE, cc.CATEGORY_NAME 
+		FROM CON_STORE_LOCATION csl ,CON_STORE cs, CON_CATEGORY_MAIN ccm, CON_CATEGORY cc 
+		WHERE cs.STORE_SEQ =csl.STORE_SEQ
+		AND cs.STORE_SEQ =ccm.STORE_SEQ 
+		AND cc.CATEGORY_CODE =ccm.CATEGORY_CODE 
+		AND STORE_LATITUDE BETWEEN #{swlat} AND #{nelat}
+		AND STORE_LONGITUDE BETWEEN #{swlng} AND #{nelng}
+		AND STORE_ADMIN_STATE ='Y'
+		ORDER BY cs.STORE_SEQ
+<!-- 		SELECT cs.store_seq, cs.store_address, ccm.CATEGORY_CODE  -->
+<!-- 		FROM CON_STORE cs, CON_CATEGORY_MAIN ccm -->
+<!-- 		WHERE cs.STORE_SEQ = ccm.STORE_SEQ -->
+<!-- 		AND STORE_ADMIN_STATE ='Y' -->
+	</select>
+	
+<!-- 	ajax 화면상의 매장 검색 : 카테고리별-->
+
+<!-- 	<select id="searchCate_ajax" parameterType="Map" resultType="SDto"> -->
+<!-- 		SELECT cs.STORE_SEQ ,cs.STORE_NAME ,cs.STORE_INTRO_SIMPLE,cs.STORE_STATE,cs.STORE_PHONE, -->
+<!-- 				cs.STORE_ADDRESS ,cs.STORE_ADDRESS_DETAIL ,ccm.CATEGORY_CODE, cc.CATEGORY_NAME  -->
+<!-- 		FROM CON_STORE_LOCATION csl ,CON_STORE cs, CON_CATEGORY_MAIN ccm, CON_CATEGORY cc  -->
+<!-- 		WHERE cs.STORE_SEQ =csl.STORE_SEQ -->
+<!-- 		AND cs.STORE_SEQ =ccm.STORE_SEQ -->
+<!-- 		AND cc.CATEGORY_CODE =ccm.CATEGORY_CODE  -->
+<!-- 		AND STORE_LATITUDE BETWEEN #{swlat} AND #{nelat} -->
+<!-- 		AND STORE_LONGITUDE BETWEEN #{swlng} AND #{nelng} -->
+<!-- 		AND STORE_ADMIN_STATE ='Y' -->
+<!-- 		AND ccm.CATEGORY_CODE IN -->
+<!-- 		<foreach collection="list" item="category_code" index="index" open="(" close=")" separator=","> -->
+<!-- 			#{category_code} -->
+<!-- 		</foreach> -->
+<!-- 		ORDER BY cs.STORE_SEQ -->
+<!-- 	</select> -->
+
+	<select id="searchCate_ajax" parameterType="Map" resultType="SDto">
+		SELECT STORE_SEQ, STORE_NAME, STORE_INTRO_SIMPLE, STORE_STATE,STORE_PHONE, 
+			STORE_ADDRESS, STORE_ADDRESS_DETAIL, CATEGORY_CODE, CATEGORY_NAME
+		FROM (SELECT ROW_NUMBER() OVER (ORDER BY cs.STORE_SEQ) AS rn,cs.STORE_SEQ ,
+					cs.STORE_NAME ,cs.STORE_INTRO_SIMPLE,cs.STORE_STATE,cs.STORE_PHONE, 
+					cs.STORE_ADDRESS ,cs.STORE_ADDRESS_DETAIL ,ccm.CATEGORY_CODE, cc.CATEGORY_NAME
+			FROM CON_STORE_LOCATION csl ,CON_STORE cs, CON_CATEGORY_MAIN ccm, CON_CATEGORY cc 
+			WHERE cs.STORE_SEQ =csl.STORE_SEQ
+			AND cs.STORE_SEQ =ccm.STORE_SEQ
+			AND cc.CATEGORY_CODE =ccm.CATEGORY_CODE
+			AND STORE_LATITUDE BETWEEN #{swlat} AND #{nelat}
+			AND STORE_LONGITUDE BETWEEN #{swlng} AND #{nelng}
+			AND STORE_ADMIN_STATE ='Y'
+			AND ccm.CATEGORY_CODE IN
+			<foreach collection="list" item="category_code" index="index" open="(" close=")" separator=",">
+				#{category_code}
+			</foreach>
+		)
+		WHERE CEIL(rn/30)=#{pnum}
+	</select>
+	
+<!-- 	ajax 특정 매장1개 검색 및 기본정보+좌표정보가져오기:키워드검색-->
+	<select id="searchKey_ajax" parameterType="String" resultType="SDto">
+		SELECT cs.STORE_SEQ ,cs.STORE_NAME ,cs.STORE_INTRO_SIMPLE,cs.STORE_STATE,cs.STORE_PHONE,
+				cs.STORE_ADDRESS ,cs.STORE_ADDRESS_DETAIL ,ccm.CATEGORY_CODE, cc.CATEGORY_NAME ,
+				csl.STORE_LATITUDE ,csl.STORE_LONGITUDE 
+		FROM CON_STORE_LOCATION csl ,CON_STORE cs, CON_CATEGORY_MAIN ccm, CON_CATEGORY cc 
+		WHERE cs.STORE_SEQ =csl.STORE_SEQ
+		AND cs.STORE_SEQ =ccm.STORE_SEQ
+		AND cc.CATEGORY_CODE =ccm.CATEGORY_CODE 
+		AND STORE_ADMIN_STATE ='Y'
+		AND cs.STORE_NAME LIKE '%'||#{keyword}||'%'
+		AND rownum=1
+		ORDER BY cs.STORE_NAME
+	</select>
+
+<!-- 	검색된 매장의 매장사진+리뷰평균 구하기 -->
+	<select id="getPhotos_ajax" parameterType="Map" resultType="SPhotoDto">
+		SELECT cnp.STORE_SEQ ,cnp.STORE_PHOTO_SEQ ,cnp.STORE_PHOTO_STORED, cnp.rn, cnr.all_avg
+		FROM (
+			SELECT cs.STORE_SEQ ,csp.STORE_PHOTO_SEQ ,csp.STORE_PHOTO_STORED,
+			ROW_NUMBER ()over(PARTITION BY cs.STORE_SEQ ORDER BY csp.STORE_PHOTO_SEQ) AS rn
+			FROM CON_STORE cs,CON_STORE_PHOTO csp 
+			WHERE cs.STORE_SEQ =csp.STORE_SEQ 
+			AND cs.STORE_SEQ IN 
+			<foreach collection="list" item="item" open="(" close=")" separator=",">
+				#{item.store_seq}
+			</foreach>
+			) cnp,
+			(SELECT STORE_SEQ ,TRUNC((AVG(REPLY_CLEAN)+AVG(REPLY_SERVICE )+AVG(REPLY_PRICE))/3,1) AS all_avg
+			FROM CON_REPLY cr 
+			WHERE cr.STORE_SEQ IN
+			<foreach collection="list" item="item" open="(" close=")" separator=",">
+				#{item.store_seq}
+			</foreach>
+			GROUP BY cr.STORE_SEQ) cnr
+		WHERE cnp.store_seq=cnr.store_seq
+		AND rn=1
+	</select>
+<!-- 	검색된 매장의 소분류 카테고리들 구하기 -->	
+	<select id="getCates_ajax" parameterType="Map" resultType="CListDto">
+		SELECT ccl.STORE_SEQ ,ccs.CATEGORY_NAME_SMALL
+		FROM CON_CATEGORY_LIST ccl, CON_CATEGORY_SMALL ccs 
+		WHERE ccl.CATEGORY_CODE_SMALL =ccs.CATEGORY_CODE_SMALL 
+		AND ccl.STORE_SEQ IN 
+		<foreach collection="list" item="item" open="(" close=")" separator=",">
+			#{item.store_seq}
+		</foreach>
+		ORDER BY ccl.STORE_SEQ, ccs.CATEGORY_CODE_SMALL
+	</select>
+<!-- 	검색된 매장의 영업시간 구하기 -->	
+	<select id="getStime_ajax" parameterType="Map" resultType="STimeDto">
+		SELECT *
+		FROM CON_STORE_TIME cst 
+		WHERE cst.STORE_SEQ IN
+		<foreach collection="list" item="item" open="(" close=")" separator=",">
+			#{item.store_seq}
+		</foreach>
+		ORDER BY cst.STORE_SEQ ,cst.STORE_TIME_SEQ
+	</select>
+<!-- 	검색된 매장의 좌표 구하기 : 아이콘 뿌려주기용 -->
+	<select id="getSloca_ajax" parameterType="Map" resultType="SLocaDto">
+		SELECT csl.STORE_SEQ ,csl.STORE_LATITUDE ,csl.STORE_LONGITUDE 
+		FROM CON_STORE_LOCATION csl 
+		WHERE csl.STORE_SEQ IN
+		<foreach collection="list" item="item" open="(" close=")" separator=",">
+			#{item.store_seq}
+		</foreach>
+		ORDER BY csl.STORE_SEQ
+	</select>
+	
+</mapper>

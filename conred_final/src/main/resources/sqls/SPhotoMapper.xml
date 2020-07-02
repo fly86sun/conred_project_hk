@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+   
+  
+<mapper namespace="com.hk.conred.SPhoto">
+
+
+	<insert id="insertSPhoto" parameterType="Map">
+		INSERT ALL
+		<foreach collection="list" item="item">
+			INTO CON_STORE_PHOTO VALUES (GET_STORE_PHOTO_SEQ,#{item.store_seq},#{item.store_photo_origin},
+			#{item.store_photo_stored},#{item.store_photo_size},#{item.store_photo_title})
+		</foreach>
+		SELECT *FROM DUAL
+	</insert>
+	
+	<update id="updateSPhoto" parameterType="Map">
+		UPDATE CON_STORE_PHOTO
+		SET STORE_PHOTO_TITLE = case STORE_PHOTO_SEQ 
+		<foreach collection="list" item="item">
+			 when #{item.store_photo_seq} then #{item.store_photo_title}
+		</foreach>
+        else STORE_PHOTO_TITLE end
+		WHERE STORE_PHOTO_SEQ IN 
+		<foreach collection="list" item="item" open="(" close=")" separator=",">
+			#{item.store_photo_seq}
+		</foreach>
+	</update>
+	
+	<delete id="deleteSPhoto" parameterType="Map">
+		DELETE FROM CON_STORE_PHOTO csp 
+		WHERE STORE_PHOTO_SEQ IN 
+		<foreach collection="arr" item="seq" open="(" close=")" separator=",">
+			#{seq}
+		</foreach>
+	</delete>
+	
+	<select id="selectSPhoto" parameterType="int" resultType="SPhotoDto">
+		<![CDATA[
+			SELECT *
+			FROM CON_STORE_PHOTO
+			WHERE STORE_SEQ =#{store_seq}
+		]]>
+	</select>
+</mapper>
+	   

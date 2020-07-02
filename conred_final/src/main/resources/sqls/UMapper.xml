@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+   
+  
+<mapper namespace="com.hk.conred.U">
+	
+	<insert id="insertUser" parameterType="UDto">
+		INSERT INTO CON_USER values(
+		#{user_id},#{user_password},#{user_name},#{user_email},#{user_birth},#{user_sex},
+		SYSDATE,#{user_agreement},'N','N','user',0)
+	</insert> 
+	 
+	<select id="userIdCheck" resultType="String" parameterType="String">
+		SELECT USER_ID FROM CON_USER WHERE USER_ID =#{user_id}
+	</select> 
+	
+	
+	<select id="getLogin" resultType="UDto" parameterType="Map">
+		SELECT USER_ID,USER_NAME ,USER_BIRTH ,USER_SEX ,USER_REGDATE,USER_OUT,USER_BLACK ,USER_ROLE ,USER_POINT 
+		FROM CON_USER
+		WHERE USER_ID =#{user_id} AND USER_PASSWORD =#{user_password}
+	</select> 
+	    
+	<select id="userMyInfo" resultType="UDto" parameterType="String">
+		SELECT user_id,user_password,user_name,user_email,user_birth,USER_SEX ,USER_REGDATE ,USER_AGREEMENT ,USER_OUT ,USER_BLACK ,USER_ROLE ,USER_POINT 
+		FROM con_user
+		WHERE USER_ID =#{user_id}
+	</select>     
+	
+	<update id="userUpdate" parameterType="UDto"> 
+		UPDATE CON_USER SET USER_BIRTH =#{user_birth} , USER_SEX=#{user_sex}, USER_NAME=#{user_name} WHERE USER_ID =#{user_id}
+	</update>
+	 
+	<update id="userDelete" parameterType="String">  
+		UPDATE CON_USER SET USER_OUT='Y' WHERE USER_ID =#{user_id}
+	</update>     
+	    
+	<select id="getStats" resultType="UDto" parameterType="String">
+		SELECT reserve_count ,qna_count,reply_count,like_count,cu.USER_POINT AS USER_POINT
+		FROM CON_USER cu ,
+			(SELECT COUNT(cr.reserve_seq) AS reserve_count
+			FROM con_user cu,CON_RESERVE cr
+			WHERE cu.USER_ID =cr.USER_ID AND cu.USER_ID =#{user_id} AND cr.reserve_succes!='Y' AND cr.reserve_state!='C') crr ,
+			(SELECT count(cq.QNA_SEQ) AS qna_count FROM con_user cu, CON_QNA cq 
+		    WHERE cu.user_id=cq.USER_ID AND cu.user_id=#{user_id} AND cq.QNA_DELFLAG='N') cqq ,
+		    (SELECT count(cr.REPLY_SEQ) AS reply_count FROM con_user cu, 
+		    CON_REPLY cr WHERE cu.user_id=cr.USER_ID AND cu.user_id=#{user_id} AND cr.REPLY_DELFLAG='N') cry,
+		    (SELECT count(cl.LIKE_LIST_SEQ) AS like_count FROM con_user cu, CON_LIKE cl  
+		     WHERE cu.user_id=cl.USER_ID AND cu.user_id=#{user_id}) cll
+		WHERE cu.USER_ID=#{user_id}	 
+	</select>
+	
+	
+<!-- 	관심사 조회 -->
+<!-- 	<select id=""> -->
+<!-- 		<![CDATA[ 	 -->
+<!-- 		SELECT *  -->
+<!--  		FROM(SELECT U.USER_ID ,C.CATEGORY_CODE , C.CATEGORY_NAME   -->
+<!-- 			FROM CON_USER U, CON_INTERESTS I, CON_CATEGORY C  -->
+<!--  			WHERE U.USER_ID = I.USER_ID AND I.CATEGORY_CODE = C.CATEGORY_CODE   -->
+<!--  			AND U.USER_ID = #{USER_ID} ) A,  -->
+<!--  			(SELECT S.STORE_SEQ ,S.OWNER_ID ,S.STORE_NAME, M.CATEGORY_CODE   -->
+<!-- 			FROM CON_STORE S,CON_CATEGORY_MAIN M  -->
+<!-- 			 WHERE S.STORE_SEQ =M.STORE_SEQ) B  -->
+<!--  		WHERE A.CATEGORY_CODE = B.CATEGORY_CODE -->
+<!--      	]]>  -->
+<!--  	</select>  -->
+        
+	
+	<select id="userInterestsIcon" parameterType="String" resultType="UDto">
+		SELECT ci.INTERESTS_SEQ,ci.CATEGORY_CODE,cc.CATEGORY_NAME
+		FROM CON_USER cu,
+						(SELECT INTERESTS_SEQ,USER_ID,CATEGORY_CODE FROM CON_INTERESTS ) ci,
+						(SELECT CATEGORY_CODE ,CATEGORY_NAME FROM CON_CATEGORY ) cc
+		WHERE cu.USER_ID =ci.USER_ID AND ci.CATEGORY_CODE=cc.CATEGORY_CODE AND cu.USER_ID=#{user_id}
+	</select>
+
+        <!--네아로를 위한 중복 아이디 조회 -->
+     <select id = "naver_confirm_id" parameterType="String" resultType="UDto">
+    	<![CDATA[
+    	SELECT *
+		FROM CON_USER
+		WHERE USER_ID=#{user_id}
+		]]>
+     </select>
+	
+<!-- 	<insert id="insertUserNaver" parameterType="UDto"> -->
+<!-- 		INSERT INTO CON_USER values( -->
+<!-- 		#{user_id},#{user_password},#{user_name},#{user_email},#{user_birth},#{user_sex}, -->
+<!-- 		SYSDATE,'Y','N','N','user',0) -->
+<!-- 	</insert> -->
+	
+
+</mapper>
+	 

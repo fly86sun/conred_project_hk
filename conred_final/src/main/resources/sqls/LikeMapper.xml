@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+   
+  
+<mapper namespace="com.hk.conred.Like">
+	
+	<select id="likeList" parameterType="Map" resultType="LikeDto"> 
+		SELECT  rn, cl.LIKE_LIST_SEQ ,cl.USER_ID ,cs.STORE_SEQ  ,cs.STORE_NAME,cs.STORE_INTRO_SIMPLE,cs.STORE_ADDRESS,cl.LIKE_REGDATE
+		FROM
+		    (SELECT  ROW_NUMBER()OVER(ORDER BY like_regdate DESC) AS rn,LIKE_LIST_SEQ ,USER_ID ,STORE_SEQ,LIKE_REGDATE
+		     FROM CON_LIKE WHERE user_id=#{user_id})cl,CON_STORE cs
+		WHERE cl.store_seq=cs.STORE_SEQ AND CEIL(rn/5)=#{pnum} AND USER_ID =#{user_id} 
+	</select>
+	
+	<delete id="userLikeDelete" parameterType="Int">
+		DELETE FROM CON_LIKE WHERE like_list_seq=#{like_list_seq}
+	</delete> 
+	
+	<select id="likeStoreImg" resultType="LikeDto" parameterType="String">
+		SELECT rn,store_seq,STORE_PHOTO_STORED,like_list_seq
+		FROM (
+		SELECT ROW_NUMBER()over(PARTITION BY cl.LIKE_LIST_SEQ ORDER BY LIKE_LIST_SEQ DESC) AS rn, cl.store_seq,csp.store_photo_stored,cl.like_list_seq
+				FROM CON_STORE_PHOTO csp,CON_LIKE cl
+				WHERE csp.store_seq=cl.store_seq AND user_id=#{user_id} 
+			)
+		WHERE rn =1
+	</select>
+	 
+	<select id="likeStore" parameterType="Map" resultType="LikeDto">
+		SELECT LIKE_LIST_SEQ ,USER_ID ,STORE_SEQ 
+		FROM CON_LIKE 
+		WHERE USER_ID =#{user_id} AND STORE_SEQ = #{store_seq}
+	</select> 
+	
+	<insert id="insertLike" parameterType="Map">
+		INSERT INTO CON_LIKE VALUES(CON_LIKE_SEQ.NEXTVAL,#{user_id},#{store_seq},sysdate)
+	</insert>
+	 
+	<delete id="deleteLike" parameterType="Map">
+		DELETE FROM CON_LIKE WHERE USER_ID =#{user_id} AND STORE_SEQ =#{store_seq}
+	</delete> 
+	 
+</mapper>
+	  

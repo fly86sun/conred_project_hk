@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+   
+  
+<mapper namespace="com.hk.conred.RPhoto">
+	<insert id="reviewPhotoInsert" parameterType="Map">
+		INSERT ALL
+		<foreach collection="list" item="item">
+			INTO CON_REPLY_PHOTO VALUES (GET_REPLY_PHOTO_SEQ,CON_REPLY_SEQ.CURRVAL,#{item.reply_photo_origin},
+			#{item.reply_photo_stored},#{item.reply_photo_size})
+		</foreach> 
+		SELECT *FROM DUAL
+	</insert>
+
+	<select id="reviewPhotoList" parameterType="Int" resultType="RPhotoDto">
+		SELECT REPLY_PHOTO_STORED ,REPLY_SEQ ,USER_ID, rn
+		FROM 
+			 (SELECT crp.REPLY_PHOTO_STORED ,crp.REPLY_SEQ ,cr.USER_ID,rownum AS rn
+		     FROM CON_REPLY_PHOTO crp,con_reply cr 
+			 WHERE crp.REPLY_SEQ =cr.REPLY_SEQ AND cr.STORE_SEQ =#{store_seq})
+	</select>
+	
+	<select id="userReplyPhoto" resultType="RPhotoDto">
+		SELECT REPLY_PHOTO_SEQ,crp.REPLY_SEQ,REPLY_PHOTO_STORED 
+		FROM CON_REPLY_PHOTO crp, CON_REPLY cr 
+		WHERE crp.REPLY_SEQ =cr.REPLY_SEQ
+	</select>
+	
+	
+	
+	
+</mapper>
+	  
